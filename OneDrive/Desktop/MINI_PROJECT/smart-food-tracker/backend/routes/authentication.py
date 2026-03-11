@@ -1,14 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from .. import models, schema
-from ..database.connection import get_db
-from ..security import create_access_token, verify_password, get_password_hash
+from models import user as user_models
+from database import schema
+from database.connection import get_db
+from security import create_access_token, verify_password, get_password_hash
 
 router = APIRouter()
 
-@router.post("/register", response_model=models.UserOut)
-def register(user: models.UserCreate, db: Session = Depends(get_db)):
+@router.post("/register", response_model=user_models.UserOut)
+def register(user: user_models.UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(schema.User).filter(schema.User.email == user.email).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -19,7 +20,7 @@ def register(user: models.UserCreate, db: Session = Depends(get_db)):
     db.refresh(db_user)
     return db_user
 
-@router.post("/login", response_model=models.Token)
+@router.post("/login", response_model=user_models.Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.query(schema.User).filter(schema.User.username == form_data.username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):

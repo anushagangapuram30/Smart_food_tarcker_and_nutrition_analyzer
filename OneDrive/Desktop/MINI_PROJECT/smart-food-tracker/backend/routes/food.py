@@ -5,8 +5,9 @@ import os
 import shutil
 import cv2
 import numpy as np
-from .. import models, schema
-from ..database.connection import get_db
+from models import food as food_models
+from database import schema
+from database.connection import get_db
 
 router = APIRouter()
 
@@ -18,7 +19,7 @@ if not os.path.exists(UPLOAD_DIR):
 # USDA API Key Placeholder
 USDA_API_KEY = "DEMO_KEY"
 
-@router.post("/upload-food-image", response_model=models.food.FoodAnalysisResult)
+@router.post("/upload-food-image", response_model=food_models.FoodAnalysisResult)
 async def upload_food_image(file: UploadFile = File(...), db: Session = Depends(get_db)):
     # Save the file
     file_path = os.path.join(UPLOAD_DIR, file.filename)
@@ -74,7 +75,7 @@ async def upload_food_image(file: UploadFile = File(...), db: Session = Depends(
         "diet_suggestions": diet_suggestions
     }
 
-@router.get("/user-history", response_model=List[models.food.FoodAnalysisResult])
+@router.get("/user-history", response_model=List[food_models.FoodAnalysisResult])
 async def get_user_history(db: Session = Depends(get_db)):
     # Retrieve user's food history from the database
     # For now, return a mock list

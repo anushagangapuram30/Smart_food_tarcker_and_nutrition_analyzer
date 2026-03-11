@@ -36,7 +36,7 @@ A production-ready AI-powered food tracking system that uses image recognition t
     cd backend
     py -m pip install -r requirements.txt
     py init_db.py # Initialize the database
-    uvicorn main:app --reload
+    py -m uvicorn main:app --reload
     ```
 
 2.  **Frontend Setup**:
