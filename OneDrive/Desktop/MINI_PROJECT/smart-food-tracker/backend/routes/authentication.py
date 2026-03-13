@@ -10,9 +10,16 @@ router = APIRouter()
 
 @router.post("/register", response_model=user_models.UserOut)
 def register(user: user_models.UserCreate, db: Session = Depends(get_db)):
-    db_user = db.query(schema.User).filter(schema.User.email == user.email).first()
-    if db_user:
+    # Check if email is already registered
+    db_user_email = db.query(schema.User).filter(schema.User.email == user.email).first()
+    if db_user_email:
         raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Check if username is already taken
+    db_user_username = db.query(schema.User).filter(schema.User.username == user.username).first()
+    if db_user_username:
+        raise HTTPException(status_code=400, detail="Username already taken")
+    
     hashed_password = get_password_hash(user.password)
     db_user = schema.User(email=user.email, hashed_password=hashed_password, username=user.username)
     db.add(db_user)

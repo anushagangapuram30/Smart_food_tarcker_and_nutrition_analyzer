@@ -21,7 +21,8 @@ const Register = () => {
       await authService.register(userData);
       navigate('/login');
     } catch (err) {
-      setError('Registration failed. Username or email might be taken.');
+      const message = err.response?.data?.detail || 'Registration failed. Please try again.';
+      setError(message);
       console.error('Registration error:', err);
     } finally {
       setLoading(false);
