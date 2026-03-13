@@ -18,10 +18,7 @@ const Login = () => {
     setLoading(true);
     setError('');
     try {
-      const formData = new FormData();
-      formData.append('username', credentials.username);
-      formData.append('password', credentials.password);
-      const response = await authService.login(formData);
+      const response = await authService.login(credentials);
       localStorage.setItem('token', response.data.access_token);
       navigate('/dashboard');
     } catch (err) {
