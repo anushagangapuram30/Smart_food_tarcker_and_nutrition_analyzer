@@ -100,19 +100,75 @@ class FoodAnalyzer:
             return yolo_detected[0]["name"].capitalize()
         return self.categories[top5_catid[0]].split(',')[0].strip().capitalize()
 
-    def detect_cooking_method(self, image_path):
-        """Heuristic-based cooking method detection for demo purposes."""
-        # This is very hard to do without a specific model.
-        # We'll use a simple heuristic based on image brightness/color for demo.
+    def detect_cooking_method(self, image_path, food_name=None):
+        """
+        Improved cooking method detection using food-type context and 
+        advanced image features (texture/color distribution).
+        """
+        # 1. Use food-type context if available (most reliable for many dishes)
+        if food_name:
+            food_name_lower = food_name.lower()
+            mapping = {
+                'sushi': 'Raw',
+                'sashimi': 'Raw',
+                'pizza': 'Baked',
+                'bread': 'Baked',
+                'cake': 'Baked',
+                'muffin': 'Baked',
+                'sandwich': 'Fresh/Cold',
+                'salad': 'Fresh/Cold',
+                'apple': 'Raw',
+                'orange': 'Raw',
+                'banana': 'Raw',
+                'soup': 'Boiled/Simmered',
+                'stew': 'Slow Cooked',
+                'curry': 'Simmered',
+                'pasta': 'Boiled',
+                'rice': 'Steamed/Boiled',
+                'steak': 'Grilled/Pan-Seared',
+                'burger': 'Grilled/Fried',
+                'fries': 'Deep Fried',
+                'donut': 'Fried',
+                'omelette': 'Fried/Pan-Seared'
+            }
+            for key, method in mapping.items():
+                if key in food_name_lower:
+                    return method
+
+        # 2. Advanced Heuristics based on Image Features
         image = cv2.imread(image_path)
-        if image is None:
-            return "Unknown"
-            
-        avg_color = np.mean(image, axis=(0, 1))
-        # Simple heuristic: if it's very dark/brown, maybe it's grilled/baked
-        if avg_color[2] > 150: # More red/yellow
-            return "Grilled"
-        elif avg_color[0] > 150: # More blue/white
+        if image is None: return "Unknown"
+        
+        # Convert to HSV for better color analysis
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        # Convert to Grayscale for texture/edge analysis
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        
+        # A. Check for Charring/Grill Marks (High contrast dark lines)
+        edges = cv2.Canny(gray, 50, 150)
+        edge_density = np.sum(edges > 0) / (edges.shape[0] * edges.shape[1])
+        
+        # B. Check for "Fried" colors (Golden/Deep Brown)
+        # Golden-brown range in HSV
+        lower_golden = np.array([10, 100, 100])
+        upper_golden = np.array([25, 255, 200])
+        mask_fried = cv2.inRange(hsv, lower_golden, upper_golden)
+        fried_ratio = np.sum(mask_fried > 0) / (mask_fried.shape[0] * mask_fried.shape[1])
+        
+        # C. Check for "Steamed/Boiled" (Higher brightness, lower saturation)
+        v_channel = hsv[:,:,2]
+        s_channel = hsv[:,:,1]
+        brightness = np.mean(v_channel)
+        saturation = np.mean(s_channel)
+
+        # Decision Logic
+        if fried_ratio > 0.15:
+            return "Fried/Golden"
+        elif edge_density > 0.08 and brightness < 120:
+            return "Grilled/Roasted"
+        elif brightness > 180 and saturation < 80:
             return "Steamed/Boiled"
+        elif saturation > 150 and brightness > 100:
+            return "Fresh/Raw"
         else:
-            return "Baked"
+            return "Baked/Roasted"

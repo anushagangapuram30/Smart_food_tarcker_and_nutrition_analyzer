@@ -44,8 +44,8 @@ async def upload_food_image(file: UploadFile = File(...), db: Session = Depends(
         # 3. Food Classification (Actual ResNet50)
         food_name = analyzer.classify_food(file_path)
 
-        # 4. Cooking Method Detection (Heuristic)
-        cooking_method = analyzer.detect_cooking_method(file_path)
+        # 4. Cooking Method Detection (Heuristic + Context)
+        cooking_method = analyzer.detect_cooking_method(file_path, food_name=food_name)
 
         # 5. Nutrition Data Retrieval (Comprehensive mapping based on USDA FoodData logic)
         nutrition_map = {
