@@ -56,41 +56,43 @@ class FoodAnalyzer:
         return detected
 
     def classify_food(self, image_path):
-        """Use ResNet50 to classify the overall food item."""
+        """Use ResNet50 and YOLOv8 to classify the overall food item."""
+        # 1. First, check if YOLOv8 detected a clear food item (it's often more accurate for specific objects)
+        yolo_detected = self.detect_ingredients(image_path)
+        if yolo_detected:
+            # Sort by confidence and get the most confident one
+            yolo_detected.sort(key=lambda x: x["confidence"], reverse=True)
+            top_yolo = yolo_detected[0]
+            # YOLO COCO food classes
+            coco_food = ['apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake']
+            if top_yolo["name"] in coco_food and top_yolo["confidence"] > 0.4:
+                return top_yolo["name"].capitalize()
+
+        # 2. Use ResNet50 for broader classification
         image = cv2.imread(image_path)
         if image is None:
             return "Unknown Food"
             
-        # Convert BGR to RGB
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         input_tensor = self.transform(image_rgb).unsqueeze(0)
         
         with torch.no_grad():
             output = self.classification_model(input_tensor)
             
-        # Get the top class
         probabilities = torch.nn.functional.softmax(output[0], dim=0)
-        top_prob, top_catid = torch.topk(probabilities, 1)
+        # Get top 5 predictions to see if any are food
+        top5_prob, top5_catid = torch.topk(probabilities, 5)
         
-        category_name = self.categories[top_catid[0]]
+        food_keywords = ['pizza', 'burger', 'sandwich', 'hotdog', 'taco', 'burrito', 'salad', 'soup', 'bread', 'cake', 'fruit', 'vegetable', 'meat', 'fish', 'pasta', 'rice', 'egg', 'cheese', 'dessert', 'snack', 'chocolate', 'cookie', 'pie', 'stew', 'curry', 'noodle', 'wrap']
         
-        # Check if the detected category is likely a food item
-        # ImageNet has categories like 'pizza', 'cheeseburger', 'hotdog', etc.
-        food_keywords = ['pizza', 'burger', 'sandwich', 'hotdog', 'taco', 'burrito', 'salad', 'soup', 'bread', 'cake', 'fruit', 'vegetable', 'meat', 'fish', 'pasta', 'rice']
+        # Check if any of the top 5 are food
+        for i in range(5):
+            category_name = self.categories[top5_catid[i]]
+            if any(keyword in category_name.lower() for keyword in food_keywords):
+                return category_name.split(',')[0].capitalize()
         
-        is_food = any(keyword in category_name.lower() for keyword in food_keywords)
-        
-        if is_food:
-            return category_name.split(',')[0].capitalize()
-        
-        # Fallback to YOLO detections if ResNet is unsure or detects non-food
-        yolo_detected = self.detect_ingredients(image_path)
-        if yolo_detected:
-            # Sort by confidence
-            yolo_detected.sort(key=lambda x: x["confidence"], reverse=True)
-            return yolo_detected[0]["name"].capitalize()
-            
-        return category_name.split(',')[0].capitalize()
+        # 3. Final fallback to the top prediction if no food keywords found
+        return self.categories[top5_catid[0]].split(',')[0].capitalize()
 
     def detect_cooking_method(self, image_path):
         """Heuristic-based cooking method detection for demo purposes."""

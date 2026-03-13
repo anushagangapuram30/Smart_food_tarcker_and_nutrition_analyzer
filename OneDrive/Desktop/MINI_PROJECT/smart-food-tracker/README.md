@@ -66,7 +66,13 @@ smart-food-tracker/
 The models are modular and can be trained using the scripts in `training_scripts/`.
 - `train_yolov8.py`: Ingredient detection training.
 - `train_resnet50.py`: Food classification training.
-- `train_cooking_method.py`: Cooking method classification training.
+- `train_food101.py`: **(Recommended)** Fine-tune ResNet50 specifically for 101 types of food.
+
+### Improving Recognition Accuracy
+The current system uses ImageNet-pretrained models which are general-purpose. To achieve production-level accuracy for food:
+1.  **Use Specialized Datasets**: Train or fine-tune models on datasets like **Food-101**, **VIREO-Food172**, or **Open Images Food**.
+2.  **Fine-tuning**: Use the `training_scripts/train_food101.py` template to train on food images.
+3.  **Custom Weights**: After training, update `FoodAnalyzer` in `ai_models/food_analyzer.py` to load your custom `.pt` weights.
 
 ## Deployment Guide
 ### Backend

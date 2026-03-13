@@ -61,6 +61,15 @@ async def upload_food_image(file: UploadFile = File(...), db: Session = Depends(
             "Rice": {"calories": 130.0, "protein": 2.7, "carbs": 28.0, "fats": 0.3, "fiber": 0.4, "sugar": 0.1},
             "Salad": {"calories": 15.0, "protein": 1.0, "carbs": 3.0, "fats": 0.1, "fiber": 1.5, "sugar": 1.0},
             "Cake": {"calories": 257.0, "protein": 3.0, "carbs": 43.0, "fats": 9.0, "fiber": 0.6, "sugar": 30.0},
+            "Bread": {"calories": 265.0, "protein": 9.0, "carbs": 49.0, "fats": 3.2, "fiber": 2.7, "sugar": 5.0},
+            "Egg": {"calories": 155.0, "protein": 13.0, "carbs": 1.1, "fats": 11.0, "fiber": 0.0, "sugar": 1.1},
+            "Chicken": {"calories": 239.0, "protein": 27.0, "carbs": 0.0, "fats": 14.0, "fiber": 0.0, "sugar": 0.0},
+            "Banana": {"calories": 89.0, "protein": 1.1, "carbs": 23.0, "fats": 0.3, "fiber": 2.6, "sugar": 12.0},
+            "Cookie": {"calories": 502.0, "protein": 4.8, "carbs": 68.0, "fats": 24.0, "fiber": 1.0, "sugar": 33.0},
+            "Soup": {"calories": 36.0, "protein": 1.2, "carbs": 7.0, "fats": 0.5, "fiber": 0.5, "sugar": 1.5},
+            "Noodle": {"calories": 138.0, "protein": 4.5, "carbs": 25.0, "fats": 2.1, "fiber": 1.0, "sugar": 0.4},
+            "Cheese": {"calories": 402.0, "protein": 25.0, "carbs": 1.3, "fats": 33.0, "fiber": 0.0, "sugar": 0.5},
+            "Potato": {"calories": 77.0, "protein": 2.0, "carbs": 17.0, "fats": 0.1, "fiber": 2.2, "sugar": 0.8},
         }
         
         # Heuristic matching for nutrition lookup
